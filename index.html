@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OnyxCore — Automated Trading Terminal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg: '#0a0a0f',
+            surface: '#12121a',
+            card: '#1a1a26',
+            border: '#2a2a3a',
+            accent: '#6c5ce7',
+            'accent-light': '#a29bfe',
+            'accent-glow': 'rgba(108, 92, 231, 0.25)',
+            muted: '#6b7280',
+            fg: '#e2e2ea',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { background-color: #0a0a0f; color: #e2e2ea; font-family: 'Inter', system-ui, sans-serif; overflow-x: hidden; }
+
+    /* Animated gradient background */
+    .hero-bg {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .hero-bg::before {
+      content: '';
+      position: absolute;
+      top: -30%; left: 50%; transform: translateX(-50%);
+      width: 800px; height: 800px;
+      background: radial-gradient(circle, rgba(108,92,231,0.12) 0%, rgba(108,92,231,0.03) 40%, transparent 70%);
+      animation: pulseGlow 8s ease-in-out infinite;
+    }
+    .hero-bg::after {
+      content: '';
+      position: absolute;
+      bottom: -20%; right: 10%;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(162,155,254,0.08) 0%, transparent 60%);
+      animation: pulseGlow 10s ease-in-out infinite reverse;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
+      50% { opacity: 1; transform: translateX(-50%) scale(1.15); }
+    }
+
+    /* Grid pattern */
+    .grid-pattern {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(108,92,231,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(108,92,231,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 20%, transparent 100%);
+    }
+
+    /* Floating particles */
+    .particle {
+      position: fixed;
+      border-radius: 50%;
+      background: rgba(108,92,231,0.3);
+      pointer-events: none;
+      z-index: 0;
+      animation: floatParticle linear infinite;
+    }
+    @keyframes floatParticle {
+      0% { transform: translateY(100vh) scale(0); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+    }
+
+    /* Logo animation */
+    .logo-icon {
+      animation: logoFloat 6s ease-in-out infinite;
+    }
+    @keyframes logoFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+
+    /* Terminal cursor blink */
+    .cursor-blink {
+      animation: blink 1.2s step-end infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* Button shine effect */
+    .btn-shine {
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-shine::after {
+      content: '';
+      position: absolute;
+      top: -50%; left: -60%;
+      width: 40%; height: 200%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+      transform: skewX(-20deg);
+      animation: shine 6s ease-in-out infinite;
+    }
+    @keyframes shine {
+      0%, 100% { left: -60%; }
+      50% { left: 120%; }
+    }
+
+    /* Ticker tape */
+    .ticker-wrap {
+      overflow: hidden;
+      width: 100%;
+    }
+    .ticker {
+      display: flex;
+      animation: ticker 40s linear infinite;
+      width: max-content;
+    }
+    @keyframes ticker {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* Typing effect */
+    .typing-line {
+      overflow: hidden;
+      white-space: nowrap;
+      border-right: 2px solid #6c5ce7;
+      animation: typing 3s steps(40) forwards, blinkCaret 0.8s step-end infinite;
+      width: 0;
+    }
+    .typing-line.active {
+      width: 100%;
+    }
+    @keyframes typing {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+    @keyframes blinkCaret {
+      50% { border-color: transparent; }
+    }
+
+    /* Fade in up */
+    .fade-in-up {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    }
+    .fade-in-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Scroll indicator */
+    .scroll-indicator {
+      animation: scrollBounce 2s ease-in-out infinite;
+    }
+    @keyframes scrollBounce {
+      0%, 100% { transform: translateY(0); opacity: 0.6; }
+      50% { transform: translateY(8px); opacity: 1; }
+    }
+
+    /* Stat counter */
+    .stat-value {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0a0f; }
+    ::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #6c5ce7; }
+  </style>
+</head>
+<body>
+
+  <!-- Background layers -->
+  <div class="hero-bg"></div>
+  <div class="grid-pattern"></div>
+  <div id="particles"></div>
+
+  
+
+  <!-- Main content -->
+  <main class="relative z-10 min-h-screen flex flex-col">
+
+    <!-- Hero section -->
+    <section class="flex-1 flex flex-col items-center justify-center px-6 pt-16 pb-12">
+      <div class="max-w-3xl mx-auto text-center">
+
+        <!-- Logo -->
+        <div class="fade-in-up mb-10 logo-icon">
+          <div class="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-gradient-to-br from-accent to-accent-light shadow-lg shadow-accent-glow">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 36L18 16L24 26L30 12L40 36" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="18" cy="16" r="2.5" fill="white"/>
+              <circle cx="30" cy="12" r="2.5" fill="white"/>
+              <path d="M6 36H42" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Product name -->
+        <h1 class="fade-in-up text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight mb-2">
+          <span class="bg-gradient-to-r from-white via-fg to-muted bg-clip-text text-transparent">Onyx</span><span class="bg-gradient-to-r from-accent-light to-accent bg-clip-text text-transparent">Core</span>
+        </h1>
+        <p class="fade-in-up font-mono text-accent-light/70 text-sm tracking-widest uppercase mb-10">
+          Terminal v3.0<span class="cursor-blink text-accent">_</span>
+        </p>
+
+        <!-- Description paragraphs -->
+        <div class="fade-in-up space-y-5 mb-14 max-w-xl mx-auto">
+          <p class="text-fg/80 text-lg leading-relaxed">
+            An automated trading terminal with algorithmic strategies, real-time market analysis, and instant order execution. Full control over your trading process.
+          </p>
+          <p class="text-muted text-base leading-relaxed">
+            OnyxCore analyzes thousands of market signals per second, automatically opens and closes positions based on defined strategies, minimizing emotional errors and maximizing the efficiency of every trade.
+          </p>
+        </div>
+
+        <!-- Buttons -->
+        <div class="fade-in-up flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+          <button onclick="handleDownload('windows')" class="btn-shine group flex items-center gap-3 px-8 py-4 bg-accent hover:bg-accent-light rounded-xl text-white font-semibold text-base transition-all duration-300 hover:shadow-lg hover:shadow-accent-glow hover:scale-[1.03] active:scale-[0.98]">
+            <i data-lucide="monitor" class="w-5 h-5"></i>
+            Download for Windows
+          </button>
+          <button onclick="handleDownload('mac')" class="btn-shine group flex items-center gap-3 px-8 py-4 bg-accent hover:bg-accent-light rounded-xl text-white font-semibold text-base transition-all duration-300 hover:shadow-lg hover:shadow-accent-glow hover:scale-[1.03] active:scale-[0.98]">
+            <i data-lucide="laptop" class="w-5 h-5"></i>
+            Download for macOS
+          </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="fade-in-up grid grid-cols-3 gap-6 max-w-md mx-auto mb-14">
+          <div class="text-center">
+            <div class="stat-value text-2xl font-bold text-white" data-target="12" data-suffix="ms">0ms</div>
+            <div class="text-xs text-muted mt-1">Latency</div>
+          </div>
+          <div class="text-center">
+            <div class="stat-value text-2xl font-bold text-white" data-target="99.7" data-suffix="%" data-decimal="true">0%</div>
+            <div class="text-xs text-muted mt-1">Uptime</div>
+          </div>
+          <div class="text-center">
+            <div class="stat-value text-2xl font-bold text-white" data-target="50" data-suffix="+">0+</div>
+            <div class="text-xs text-muted mt-1">Exchanges</div>
+          </div>
+        </div>
+
+        
+      </div>
+    </section>
+
+    
+
+    <!-- Footer -->
+    <footer class="px-6 py-8 border-t border-border/30">
+      <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2 text-sm text-muted">
+          <div class="w-5 h-5 rounded bg-accent/20 flex items-center justify-center">
+            <svg width="10" height="10" viewBox="0 0 48 48" fill="none">
+              <path d="M8 36L18 16L24 26L30 12L40 36" stroke="#6c5ce7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          OnyxCore © 2025
+        </div>
+        <div class="flex items-center gap-6 text-sm text-muted">
+          <a href="#" class="hover:text-accent transition-colors">Documentation</a>
+          <a href="#" class="hover:text-accent transition-colors">User Agreement</a>
+        </div>
+      </div>
+    </footer>
+
+  </main>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    // Initialize icons
+    lucide.createIcons();
+
+    // Create floating particles
+    function createParticles() {
+      const container = document.getElementById('particles');
+      for (let i = 0; i < 15; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        const size = Math.random() * 3 + 1;
+        particle.style.width = size + 'px';
+        particle.style.height = size + 'px';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.animationDuration = (Math.random() * 20 + 15) + 's';
+        particle.style.animationDelay = (Math.random() * 20) + 's';
+        particle.style.opacity = Math.random() * 0.5 + 0.1;
+        container.appendChild(particle);
+      }
+    }
+    createParticles();
+
+    // Intersection Observer for fade-in animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, index) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => {
+            entry.target.classList.add('visible');
+          }, index * 100);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-in-up').forEach(el => observer.observe(el));
+
+    // Animate stat counters
+    function animateCounters() {
+      document.querySelectorAll('.stat-value').forEach(el => {
+        const target = parseFloat(el.dataset.target);
+        const suffix = el.dataset.suffix || '';
+        const isDecimal = el.dataset.decimal === 'true';
+        const duration = 2000;
+        const start = performance.now();
+
+        function update(now) {
+          const elapsed = now - start;
+          const progress = Math.min(elapsed / duration, 1);
+          // Ease out cubic
+          const eased = 1 - Math.pow(1 - progress, 3);
+          const current = eased * target;
+
+          if (isDecimal) {
+            el.textContent = current.toFixed(1) + suffix;
+          } else {
+            el.textContent = Math.floor(current) + suffix;
+          }
+
+          if (progress < 1) {
+            requestAnimationFrame(update);
+          }
+        }
+        requestAnimationFrame(update);
+      });
+    }
+
+    // Start counters when hero section is visible
+    const heroObserver = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        setTimeout(animateCounters, 800);
+        heroObserver.disconnect();
+      }
+    }, { threshold: 0.3 });
+    heroObserver.observe(document.querySelector('section'));
+
+    // Download handler
+    function handleDownload(platform) {
+      const btn = event.currentTarget;
+      const originalContent = btn.innerHTML;
+
+      btn.innerHTML = `
+        <svg class="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4 31.4" stroke-linecap="round"/>
+        </svg>
+        Preparing...
+      `;
+      btn.disabled = true;
+
+      setTimeout(() => {
+        btn.innerHTML = `
+          <i data-lucide="check" class="w-5 h-5"></i>
+          Coming soon
+        `;
+        btn.classList.remove('bg-accent', 'bg-card');
+        btn.classList.add('bg-green-600/80');
+        lucide.createIcons();
+
+        setTimeout(() => {
+          btn.innerHTML = originalContent;
+          btn.disabled = false;
+          btn.classList.remove('bg-green-600/80');
+          btn.classList.add('bg-accent');
+          lucide.createIcons();
+        }, 2500);
+      }, 1500);
+    }
+  </script>
+<script src="https://deepsite.hf.co/deepsite-badge.js"></script>
+</body>
+</html>
