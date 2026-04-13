@@ -212,14 +212,14 @@
 
         <!-- Buttons -->
         <div class="fade-in-up flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-          <button onclick="handleDownload('windows')" class="btn-shine group flex items-center gap-3 px-8 py-4 bg-accent hover:bg-accent-light rounded-xl text-white font-semibold text-base transition-all duration-300 hover:shadow-lg hover:shadow-accent-glow hover:scale-[1.03] active:scale-[0.98]">
+          <a href="OnyxCore-Setup-Windows.exe" download class="btn-shine group flex items-center gap-3 px-8 py-4 bg-accent hover:bg-accent-light rounded-xl text-white font-semibold text-base transition-all duration-300 hover:shadow-lg hover:shadow-accent-glow hover:scale-[1.03] active:scale-[0.98]">
             <i data-lucide="monitor" class="w-5 h-5"></i>
             Download for Windows
-          </button>
-          <button onclick="handleDownload('mac')" class="btn-shine group flex items-center gap-3 px-8 py-4 bg-accent hover:bg-accent-light rounded-xl text-white font-semibold text-base transition-all duration-300 hover:shadow-lg hover:shadow-accent-glow hover:scale-[1.03] active:scale-[0.98]">
+          </a>
+          <a href="OnyxCore-Setup-macOS.dmg" download class="btn-shine group flex items-center gap-3 px-8 py-4 bg-accent hover:bg-accent-light rounded-xl text-white font-semibold text-base transition-all duration-300 hover:shadow-lg hover:shadow-accent-glow hover:scale-[1.03] active:scale-[0.98]">
             <i data-lucide="laptop" class="w-5 h-5"></i>
             Download for macOS
-          </button>
+          </a>
         </div>
         
       </div>
@@ -262,38 +262,6 @@
     }, { threshold: 0.1 });
 
     document.querySelectorAll('.fade-in-up').forEach(el => observer.observe(el));
-
-    // Download handler
-    function handleDownload(platform) {
-      const btn = event.currentTarget;
-      const originalContent = btn.innerHTML;
-
-      btn.innerHTML = `
-        <svg class="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4 31.4" stroke-linecap="round"/>
-        </svg>
-        Preparing...
-      `;
-      btn.disabled = true;
-
-      setTimeout(() => {
-        btn.innerHTML = `
-          <i data-lucide="check" class="w-5 h-5"></i>
-          Coming soon
-        `;
-        btn.classList.remove('bg-accent', 'bg-card');
-        btn.classList.add('bg-green-600/80');
-        lucide.createIcons();
-
-        setTimeout(() => {
-          btn.innerHTML = originalContent;
-          btn.disabled = false;
-          btn.classList.remove('bg-green-600/80');
-          btn.classList.add('bg-accent');
-          lucide.createIcons();
-        }, 2500);
-      }, 1500);
-    }
   </script>
 </body>
 </html>
