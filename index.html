@@ -236,7 +236,8 @@
         <!-- Description paragraphs -->
         <div class="fade-in-up space-y-5 mb-14 max-w-xl mx-auto">
           <p class="text-muted text-base leading-relaxed">
-            An automated trading terminal with algorithmic strategies, real-time market analysis, and instant order execution.</br>
+            An automated trading terminal with algorithmic strategies,</br> 
+            real-time market analysis, and instant order execution.</br>
             Full control over your trading process.
           </p>
         </div>
@@ -252,41 +253,9 @@
             Download for macOS
           </button>
         </div>
-
-        <!-- Stats -->
-        <div class="fade-in-up grid grid-cols-2 gap-6 max-w-md mx-auto mb-14">
-          <div class="text-center">
-            <div class="stat-value text-2xl font-bold text-white" data-target="12" data-suffix="ms">0ms</div>
-            <div class="text-xs text-muted mt-1">Latency</div>
-          </div>
-          <div class="text-center">
-            <div class="stat-value text-2xl font-bold text-white" data-target="99.7" data-suffix="%" data-decimal="true">0%</div>
-            <div class="text-xs text-muted mt-1">Uptime</div>
-          </div>
-        </div>
-
         
       </div>
     </section>
-
-    
-
-    <!-- Footer -->
-    <footer class="px-6 py-8 border-t border-border/30">
-      <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div class="flex items-center gap-2 text-sm text-muted">
-          <div class="w-5 h-5 rounded bg-accent/20 flex items-center justify-center">
-            <svg width="10" height="10" viewBox="0 0 48 48" fill="none">
-              <path d="M8 36L18 16L24 26L30 12L40 36" stroke="#6c5ce7" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          OnyxCore © 2026
-        </div>
-        <div class="flex items-center gap-6 text-sm text-muted">
-          <a href="#" class="hover:text-accent transition-colors">Documentation</a>
-        </div>
-      </div>
-    </footer>
 
   </main>
 
@@ -325,45 +294,6 @@
     }, { threshold: 0.1 });
 
     document.querySelectorAll('.fade-in-up').forEach(el => observer.observe(el));
-
-    // Animate stat counters
-    function animateCounters() {
-      document.querySelectorAll('.stat-value').forEach(el => {
-        const target = parseFloat(el.dataset.target);
-        const suffix = el.dataset.suffix || '';
-        const isDecimal = el.dataset.decimal === 'true';
-        const duration = 2000;
-        const start = performance.now();
-
-        function update(now) {
-          const elapsed = now - start;
-          const progress = Math.min(elapsed / duration, 1);
-          // Ease out cubic
-          const eased = 1 - Math.pow(1 - progress, 3);
-          const current = eased * target;
-
-          if (isDecimal) {
-            el.textContent = current.toFixed(1) + suffix;
-          } else {
-            el.textContent = Math.floor(current) + suffix;
-          }
-
-          if (progress < 1) {
-            requestAnimationFrame(update);
-          }
-        }
-        requestAnimationFrame(update);
-      });
-    }
-
-    // Start counters when hero section is visible
-    const heroObserver = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
-        setTimeout(animateCounters, 800);
-        heroObserver.disconnect();
-      }
-    }, { threshold: 0.3 });
-    heroObserver.observe(document.querySelector('section'));
 
     // Download handler
     function handleDownload(platform) {
